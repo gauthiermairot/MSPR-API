@@ -37,32 +37,6 @@ app.use("/promos", promosRouter);
 // app.listen('/');
 
 
-app.get('/a', (req, res) => {
-  res.send('Hello blog reader!')
-})
-
-let con = mysql.createConnection({
-	host: process.env.MYSQL_HOST,
-	user: process.env.MYSQL_USER,
-	password: process.env.MYSQL_PWD,
-	database: process.env.MYSQL_DB,
-});
-
-con.connect(function(error) {
-	if (error) {
-		res.send('Error mySQL')
-	}
-	else {
-		console.log("connected")
-	}
-});
-app.get("/test", (req, res) => {
-	con.query(`select * from QR_CODE`, function(error, rows, fields) {     
-		res.send(rows);
-    });
-});
-
-
 app.listen(0, () => {
   console.log('Listening')
 })
