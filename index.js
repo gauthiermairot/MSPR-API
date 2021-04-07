@@ -6,7 +6,7 @@ const swaggerJsDoc = require("swagger-jsdoc");
 require('dotenv').config();
 const promosRouter = require("./routes/promos");
 
-//const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4000;
 
 const options = {
 	definition: {
@@ -19,7 +19,7 @@ const options = {
 		servers: [
 			{
 				//url: "http://localhost:4000",
-				url: "https://mspr-epsi.tomco.tech",
+				url: "https://mspr-epsi.tomco.tech:4000",
 			},
 		],
 	},
