@@ -50,9 +50,11 @@ let con = mysql.createConnection({
 
 con.connect(function(error) {
 	if (error) {
-		res.send('Error mySQL' + error).end()
+		res.send('Error mySQL')
 	}
-	else console.log("connected");
+	else {
+		console.log("connected")
+	}
 });
 app.get("/test", (req, res) => {
 	con.query(`select * from QR_CODE`, function(error, rows, fields) {     
