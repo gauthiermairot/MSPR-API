@@ -39,6 +39,14 @@ app.use("/promos", promosRouter);
 app.get('/a', (req, res) => {
   res.send('Hello blog reader!')
 })
+
+app.get("/test", (req, res) => {
+	con.query(`select * from QR_CODE`, function(error, rows, fields) {     
+		res.send(rows);
+    });
+});
+
+
 app.listen(0, () => {
   console.log('Listening')
 })
