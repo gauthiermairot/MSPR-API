@@ -35,7 +35,7 @@ app.use(morgan("dev"));
 app.use("/promos", promosRouter);
 // app.listen('/');
 
-const app = express()
+
 app.get('/a', (req, res) => {
   res.send('Hello blog reader!')
 })
