@@ -50,7 +50,7 @@ let con = mysql.createConnection({
 
 con.connect(function(error) {
 	if (error) {
-		res.send('Error mySQL' + error)
+		res.send('Error mySQL' + error).end()
 	}
 	else console.log("connected");
 });
