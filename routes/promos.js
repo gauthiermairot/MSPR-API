@@ -6,10 +6,10 @@ const { nanoid } = require("nanoid");
 const idLength = 8;
 
 let db = mysql.createConnection({
-	host: process.env.MYSQL_HOST,
-	user: process.env.MYSQL_USER,
-	password: process.env.MYSQL_PWD,
-	database: process.env.MYSQL_DB,
+	host: "mspr-epsi.tomco.tech",
+	user: "rsilwzqw_MSPR-EPSI21",
+	password: "fc9l60L*",
+	database: "rsilwzqw_MSPR-EPSI2021",
 });
 
 db.connect(function(error) {
