@@ -49,7 +49,9 @@ let con = mysql.createConnection({
 });
 
 con.connect(function(error) {
-	if (error) console.log(error);
+	if (error) {
+		res.send('Error mySQL' + error)
+	}
 	else console.log("connected");
 });
 app.get("/test", (req, res) => {
