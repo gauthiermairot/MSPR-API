@@ -18,7 +18,7 @@ const options = {
 		},
 		servers: [
 			{
-				//url: "http://localhost:4000",
+				//url: "http://localhost",
 				url: "https://mspr-epsi.tomco.tech",
 			},
 		],
@@ -33,5 +33,5 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 app.use("/promos", promosRouter);
-app.listen(PORT);
+//app.listen(PORT);
 
