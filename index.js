@@ -43,6 +43,5 @@ app.use("/promos", promosRouter);
 // })
 let server = app.listen(0, () => {
 	console.log('Listening', server.address().port)
-	res.send(server.address().port)
   })
 
