@@ -5,19 +5,16 @@ const { nanoid } = require("nanoid");
 
 const idLength = 8;
 
-let con = mysql.createConnection({
+let db = mysql.createConnection({
 	host: process.env.MYSQL_HOST,
 	user: process.env.MYSQL_USER,
 	password: process.env.MYSQL_PWD,
 	database: process.env.MYSQL_DB,
 });
 
-con.connect(function(error) {
-	if (error) {
-		res.send("error sql")
-		return
-	}
-	else console.log("connected");
+db.connect(function(error) {
+	if (error) throw error;
+	console.log("Connecté à la base de données MySQL!");
 });
 
 /**
@@ -70,7 +67,8 @@ con.connect(function(error) {
  */
 
 router.get("/", (req, res) => {
-	con.query(`select * from QR_CODE`, function(error, rows, fields) {     
+	db.query(`select * from QR_CODE`, function(error, rows, fields) {   
+		if (error) throw error;  
 		res.send(rows);
     });
 });
@@ -101,7 +99,8 @@ router.get("/", (req, res) => {
 
 router.get("/:id", (req, res) => {
   	//const promo = req.app.db.get("promos").find({ id: req.params.id }).value();
-	con.query(`select * from QR_CODE WHERE ID = ${ req.params.id}`, function(error, rows, fields) {     
+	db.query(`select * from QR_CODE WHERE ID = ${ req.params.id}`, function(error, rows, fields) {   
+		if (error) throw error;    
 		if(error || Object.keys(rows).length === 0){
 			res.status(404).send({ error: "Error" });
       		return;
