@@ -35,9 +35,8 @@ const promosRouter = require("./routes/promos");
 // app.use("/promos", promosRouter);
 // app.listen('/');
 
-const express = require('express')
 const app = express()
-app.get('/', (req, res) => {
+app.get('/a', (req, res) => {
   res.send('Hello blog reader!')
 })
 app.listen(0, () => {
