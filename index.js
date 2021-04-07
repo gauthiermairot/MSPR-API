@@ -5,6 +5,7 @@ const swaggerUI = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
 require('dotenv').config();
 const promosRouter = require("./routes/promos");
+const mysql = require('mysql');
 
 // const PORT = process.env.PORT || 80;
 

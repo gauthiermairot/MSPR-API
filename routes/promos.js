@@ -12,9 +12,6 @@ let con = mysql.createConnection({
 	database: process.env.MYSQL_DB,
 });
 
-function Connect() {
-	
-}
 con.connect(function(error) {
 	if (error) console.log(error);
 	else console.log("connected");
