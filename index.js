@@ -5,7 +5,6 @@ const swaggerUI = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
 require('dotenv').config();
 const promosRouter = require("./routes/promos");
-const mysql = require('mysql');
 
 // const PORT = process.env.PORT || 80;
 
@@ -37,7 +36,7 @@ app.use("/promos", promosRouter);
 // app.listen('/');
 
 
-app.listen(0, () => {
+app.listen(80, () => {
   console.log('Listening')
 })
 
