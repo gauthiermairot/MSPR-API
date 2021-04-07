@@ -6,7 +6,7 @@ const swaggerJsDoc = require("swagger-jsdoc");
 require('dotenv').config();
 const promosRouter = require("./routes/promos");
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 80;
 
 const options = {
 	definition: {
