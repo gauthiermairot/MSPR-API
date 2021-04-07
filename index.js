@@ -6,7 +6,7 @@ const swaggerJsDoc = require("swagger-jsdoc");
 require('dotenv').config();
 const promosRouter = require("./routes/promos");
 
-// const PORT = process.env.PORT || 80;
+// const PORT = process.env.PORT || 4000;
 
 const options = {
 	definition: {
@@ -18,9 +18,11 @@ const options = {
 		},
 		servers: [
 			{
-				//url: "http://localhost",
-				url: "https://mspr-epsi.tomco.tech",
+				url: "http://localhost:4000"
 			},
+			{
+				url: "https://mspr-epsi.tomco.tech"
+			}
 		],
 	},
 	apis: ["./routes/*.js"],
@@ -36,7 +38,11 @@ app.use("/promos", promosRouter);
 // app.listen('/');
 
 
-app.listen(80, () => {
-  console.log('Listening')
-})
+// app.listen(4000, () => {
+//   console.log('Listening')
+// })
+let server = app.listen(0, () => {
+	console.log('Listening', server.address().port)
+	res.send(server.address().port)
+  })
 
