@@ -33,5 +33,5 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 app.use("/promos", promosRouter);
-app.listen();
+app.listen('/');
 
