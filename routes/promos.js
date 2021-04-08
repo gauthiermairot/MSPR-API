@@ -4,61 +4,76 @@ const mysql = require('mysql');
 const { nanoid } = require("nanoid");
 
 const idLength = 8;
+const table = "QR_CODE";
 
 let db = mysql.createConnection({
-	host: "localhost",
-	//host: "mspr-epsi.tomco.tech",
-	user: "rsilwzqw_MSPR-EPSI21",
-	password: "fc9l60L*",
-	database: "rsilwzqw_MSPR-EPSI2021",
+    host: "localhost",
+    //host: "mspr-epsi.tomco.tech",
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PWD,
+    database: process.env.MYSQL_DB,
 });
 
 db.connect(function(error) {
-	if (error) throw error;
-	console.log("Connecté à la base de données MySQL!");
+    if (error) throw error;
+    console.log("Connecté à la base de données MySQL!");
 });
 
 /**
  * @swagger
  * components:
+ *   securitySchemes:
+ *    oAuthSample:
+ *     type: oauth2
+ *     description: Cette API utilise l'authentification OAuth 2.0
+ *     flows:
+ *       implicit:   # <---- OAuth flow(authorizationCode, implicit, password or clientCredentials)
+ *         authorizationUrl: http://localhost:443/api-docs/oauth2/authorize
+ *         scopes:
+ *           write_promo: créer ou modifier un code promo
+ *           delete_promo: supprimer un code promo
  *   schemas:
  *     Promo:
  *       type: object
  *       required:
- *         - title
- *         - author
+ *         - ID
+ *         - DATA
  *       properties:
- *         id:
+ *         ID:
+ *           type: integer
+ *           description: L'identifiant automatiquement généré par la base de données
+ *         DATA:
  *           type: string
- *           description: The auto-generated id of the promo
- *         title:
+ *           description: Le code promotionnel
+ *         LIBELLE:
  *           type: string
- *           description: The promo title
- *         author:
+ *           description: Le contenue que contient le code promotionnel
+ *         MONTANT:
  *           type: string
- *           description: The promo author
+ *           description: Le montant de la promotion
  *       example:
- *         id: d5fE_asz
- *         title: The New Turing Omnibus
- *         author: Alexander K. Dewdney
+ *         ID: 5
+ *         DATA: CodePromo1
+ *         LIBELLE: Mon Code Promo
+ *         MONTANT: 10
  */
 
- /**
-  * @swagger
-  * tags:
-  *   name: Promos
-  *   description: The promos managing API
-  */
+/**
+ * @swagger
+ * tags:
+ *   name: Promos
+ *   description: API de gestion des codes promotionnels
+ */
 
 /**
  * @swagger
  * /promos:
  *   get:
- *     summary: Returns the list of all the promos
+ *     summary: Retourne la liste des codes promotionnels
  *     tags: [Promos]
  *     responses:
  *       200:
- *         description: The list of the promos
+ *         description: Succès, Liste des codes promotionnels
  *         content:
  *           application/json:
  *             schema:
@@ -68,9 +83,9 @@ db.connect(function(error) {
  */
 
 router.get("/", (req, res) => {
-	db.query(`select * from QR_CODE`, function(error, rows, fields) {   
-		if (error) throw error;  
-		res.send(rows);
+    db.query(`select * from ${table}`, function(error, rows, fields) {
+        if (error) throw error;
+        res.send(rows);
     });
 });
 
@@ -78,7 +93,7 @@ router.get("/", (req, res) => {
  * @swagger
  * /promos/{id}:
  *   get:
- *     summary: Get the promo by id
+ *     summary: Retourne un code promotionnel à l'aide de son ID
  *     tags: [Promos]
  *     parameters:
  *       - in: path
@@ -86,41 +101,36 @@ router.get("/", (req, res) => {
  *         schema:
  *           type: string
  *         required: true
- *         description: The promo id
+ *         description: Identifiant du code promo
  *     responses:
  *       200:
- *         description: The promo description by id
+ *         description: La description du code promotionnel par ID
  *         contens:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Promo'
  *       404:
- *         description: The promo was not found
+ *         description: Erreur, le code promo n'a pas été trouvé
  */
 
 router.get("/:id", (req, res) => {
-  	//const promo = req.app.db.get("promos").find({ id: req.params.id }).value();
-	db.query(`select * from QR_CODE WHERE ID = ${ req.params.id}`, function(error, rows, fields) {   
-		if (error) throw error;    
-		if(error || Object.keys(rows).length === 0){
-			res.status(404).send({ error: "Error" });
-      		return;
-		}
-		res.send(rows);
+    db.query(`select * from ${table} WHERE ID = ${ req.params.id}`, function(error, rows, fields) {
+        if (error) throw error;
+        if (error || Object.keys(rows).length === 0) {
+            res.status(404).send({ error: "Error" });
+            return;
+        }
+        res.send(rows);
     });
-
-	// if(!promo){
-	// 	res.sendStatus(404)
-	// }
-
-	// res.send(promo);
 });
 
 /**
  * @swagger
  * /promos:
  *   post:
- *     summary: Create a new promo
+ *     summary: Création d'un code promotionnel
+ *     security:
+ *       oAuthSample: [write_promo]
  *     tags: [Promos]
  *     requestBody:
  *       required: true
@@ -130,35 +140,37 @@ router.get("/:id", (req, res) => {
  *             $ref: '#/components/schemas/Promo'
  *     responses:
  *       200:
- *         description: The promo was successfully created
+ *         description: Le code promotionnel a été enregistré avec succès
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Promo'
  *       500:
- *         description: Some server error
+ *         description: Erreur, Le serveur a rencontré un problème
  */
 
 router.post("/", (req, res) => {
-	try {
-		const promo = {
-			id: nanoid(idLength),
-			...req.body,
-		};
+    try {
+        const promo = {
+            id: nanoid(idLength),
+            ...req.body,
+        };
 
-    req.app.db.get("promos").push(promo).write();
-    
-    res.send(promo)
-	} catch (error) {
-		return res.status(500).send(error);
-	}
+        req.app.db.get("promos").push(promo).write();
+
+        res.send(promo)
+    } catch (error) {
+        return res.status(500).send(error);
+    }
 });
 
 /**
  * @swagger
  * /promos/{id}:
  *  put:
- *    summary: Update the promo by the id
+ *    summary: Mise à jour du code promotionnel
+ *    security:
+ *       oAuthSample: [write_promo]
  *    tags: [Promos]
  *    parameters:
  *      - in: path
@@ -166,7 +178,7 @@ router.post("/", (req, res) => {
  *        schema:
  *          type: string
  *        required: true
- *        description: The promo id
+ *        description: ID du code promo
  *    requestBody:
  *      required: true
  *      content:
@@ -175,36 +187,38 @@ router.post("/", (req, res) => {
  *            $ref: '#/components/schemas/Promo'
  *    responses:
  *      200:
- *        description: The promo was updated
+ *        description: Succès, le code promotionnel a bien été mis à jour
  *        content:
  *          application/json:
  *            schema:
  *              $ref: '#/components/schemas/Promo'
  *      404:
- *        description: The promo was not found
+ *        description: Erreur, le code promotionnel est introuvable
  *      500:
- *        description: Some error happened
+ *        description: Erreur, Le serveur a rencontré un problème
  */
 
 router.put("/:id", (req, res) => {
-	try {
-		req.app.db
-			.get("promos")
-			.find({ id: req.params.id })
-			.assign(req.body)
-			.write();
+    try {
+        req.app.db
+            .get("promos")
+            .find({ id: req.params.id })
+            .assign(req.body)
+            .write();
 
-		res.send(req.app.db.get("promos").find({ id: req.params.id }));
-	} catch (error) {
-		return res.status(500).send(error);
-	}
+        res.send(req.app.db.get("promos").find({ id: req.params.id }));
+    } catch (error) {
+        return res.status(500).send(error);
+    }
 });
 
 /**
  * @swagger
  * /promos/{id}:
  *   delete:
- *     summary: Remove the promo by id
+ *     summary: Suppression d'un code promotionnel avec son ID
+ *     security:
+ *       oAuthSample: [delete_promo]
  *     tags: [Promos]
  *     parameters:
  *       - in: path
@@ -212,19 +226,24 @@ router.put("/:id", (req, res) => {
  *         schema:
  *           type: string
  *         required: true
- *         description: The promo id
+ *         description: ID du code promotionnel
  * 
  *     responses:
  *       200:
- *         description: The promo was deleted
+ *         description: Succès, Le code promo a bien été supprimé
  *       404:
- *         description: The promo was not found
+ *         description: Erreur, Le code promo est introuvable dans la base de données
  */
 
 router.delete("/:id", (req, res) => {
-	req.app.db.get("promos").remove({ id: req.params.id }).write();
-
-	res.sendStatus(200);
+    db.query(`DELETE * from ${table} WHERE ID = ${ req.params.id}`, function(error, rows, fields) {
+        if (error) {
+            throw error;
+            res.sendStatus(404);
+        } else {
+            res.sendStatus(200);
+        }
+    });
 });
 
 module.exports = router;
