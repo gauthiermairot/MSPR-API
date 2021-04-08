@@ -6,8 +6,6 @@ const swaggerJsDoc = require("swagger-jsdoc");
 require('dotenv').config();
 const promosRouter = require("./routes/promos");
 
-// const PORT = process.env.PORT || 4000;
-
 const options = {
 	definition: {
 		openapi: "3.0.0",
@@ -18,11 +16,11 @@ const options = {
 		},
 		servers: [
 			{
-				url: "http://localhost:4000"
+				url: "https://mspr-epsi.tomco.tech"
 			},
 			{
-				url: "https://mspr-epsi.tomco.tech"
-			}
+				url: "http://localhost:4000"
+			},
 		],
 	},
 	apis: ["./routes/*.js"],
@@ -35,14 +33,9 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 app.use("/promos", promosRouter);
-// app.listen('/');
 
-
-// app.listen(4000, () => {
-//   console.log('Listening')
-// })
 let server = app.listen(443, () => {
 	console.log('Listening', server.address().port)
-  })
+})
 
   
