@@ -6,16 +6,16 @@ const { nanoid } = require("nanoid");
 const idLength = 8;
 
 let db = mysql.createConnection({
-	host: "localhost",
-	//host: "mspr-epsi.tomco.tech",
-	user: "rsilwzqw_MSPR-EPSI21",
-	password: "fc9l60L*",
-	database: "rsilwzqw_MSPR-EPSI2021",
+    // host: "localhost",
+    host: "mspr-epsi.tomco.tech",
+    user: "rsilwzqw_MSPR-EPSI21",
+    password: "fc9l60L*",
+    database: "rsilwzqw_MSPR-EPSI2021",
 });
 
 db.connect(function(error) {
-	if (error) throw error;
-	console.log("Connecté à la base de données MySQL!");
+    if (error) throw error;
+    console.log("Connecté à la base de données MySQL!");
 });
 
 /**
@@ -25,36 +25,39 @@ db.connect(function(error) {
  *     Promo:
  *       type: object
  *       required:
- *         - title
- *         - author
+ *         - id
+ *         - data
  *       properties:
  *         id:
+ *           type: integer
+ *           description: Identifiant généré automatiquement
+ *         data:
  *           type: string
- *           description: The auto-generated id of the promo
- *         title:
+ *           description: Le code promotionnel
+ *         libelle:
  *           type: string
- *           description: The promo title
- *         author:
- *           type: string
- *           description: The promo author
+ *           description: La description du code promotionnel
+ * 		   montant:
+ * 			 type: integer
+ * 			 description: Le montant de la réduction du code promotionnel
  *       example:
- *         id: d5fE_asz
- *         title: The New Turing Omnibus
- *         author: Alexander K. Dewdney
+ *         id:1
+ *         data:codepromo1
+ *         libelle:Marque ou description du code promotionnel
  */
 
- /**
-  * @swagger
-  * tags:
-  *   name: Promos
-  *   description: The promos managing API
-  */
+/**
+ * @swagger
+ * tags:
+ *   name: Promos
+ *   description: Api des codes promotionnels
+ */
 
 /**
  * @swagger
  * /promos:
  *   get:
- *     summary: Returns the list of all the promos
+ *     summary: Retourne la liste des codes promotionnels
  *     tags: [Promos]
  *     responses:
  *       200:
@@ -68,9 +71,9 @@ db.connect(function(error) {
  */
 
 router.get("/", (req, res) => {
-	db.query(`select * from QR_CODE`, function(error, rows, fields) {   
-		if (error) throw error;  
-		res.send(rows);
+    db.query(`select * from QR_CODE`, function(error, rows, fields) {
+        if (error) throw error;
+        res.send(rows);
     });
 });
 
@@ -99,21 +102,21 @@ router.get("/", (req, res) => {
  */
 
 router.get("/:id", (req, res) => {
-  	//const promo = req.app.db.get("promos").find({ id: req.params.id }).value();
-	db.query(`select * from QR_CODE WHERE ID = ${ req.params.id}`, function(error, rows, fields) {   
-		if (error) throw error;    
-		if(error || Object.keys(rows).length === 0){
-			res.status(404).send({ error: "Error" });
-      		return;
-		}
-		res.send(rows);
+    //const promo = req.app.db.get("promos").find({ id: req.params.id }).value();
+    db.query(`select * from QR_CODE WHERE ID = ${ req.params.id}`, function(error, rows, fields) {
+        if (error) throw error;
+        if (error || Object.keys(rows).length === 0) {
+            res.status(404).send({ error: "Error" });
+            return;
+        }
+        res.send(rows);
     });
 
-	// if(!promo){
-	// 	res.sendStatus(404)
-	// }
+    // if(!promo){
+    // 	res.sendStatus(404)
+    // }
 
-	// res.send(promo);
+    // res.send(promo);
 });
 
 /**
@@ -140,18 +143,18 @@ router.get("/:id", (req, res) => {
  */
 
 router.post("/", (req, res) => {
-	try {
-		const promo = {
-			id: nanoid(idLength),
-			...req.body,
-		};
+    try {
+        const promo = {
+            id: nanoid(idLength),
+            ...req.body,
+        };
 
-    req.app.db.get("promos").push(promo).write();
-    
-    res.send(promo)
-	} catch (error) {
-		return res.status(500).send(error);
-	}
+        req.app.db.get("promos").push(promo).write();
+
+        res.send(promo)
+    } catch (error) {
+        return res.status(500).send(error);
+    }
 });
 
 /**
@@ -187,17 +190,17 @@ router.post("/", (req, res) => {
  */
 
 router.put("/:id", (req, res) => {
-	try {
-		req.app.db
-			.get("promos")
-			.find({ id: req.params.id })
-			.assign(req.body)
-			.write();
+    try {
+        req.app.db
+            .get("promos")
+            .find({ id: req.params.id })
+            .assign(req.body)
+            .write();
 
-		res.send(req.app.db.get("promos").find({ id: req.params.id }));
-	} catch (error) {
-		return res.status(500).send(error);
-	}
+        res.send(req.app.db.get("promos").find({ id: req.params.id }));
+    } catch (error) {
+        return res.status(500).send(error);
+    }
 });
 
 /**
@@ -222,9 +225,9 @@ router.put("/:id", (req, res) => {
  */
 
 router.delete("/:id", (req, res) => {
-	req.app.db.get("promos").remove({ id: req.params.id }).write();
+    req.app.db.get("promos").remove({ id: req.params.id }).write();
 
-	res.sendStatus(200);
+    res.sendStatus(200);
 });
 
 module.exports = router;
