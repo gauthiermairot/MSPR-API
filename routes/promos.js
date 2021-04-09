@@ -4,13 +4,14 @@ const mysql = require('mysql');
 const { nanoid } = require("nanoid");
 
 const idLength = 8;
+const table = "QR_CODE";
 
 let db = mysql.createConnection({
     // host: "localhost",
     host: "mspr-epsi.tomco.tech",
-    user: "rsilwzqw_MSPR-EPSI21",
-    password: "fc9l60L*",
-    database: "rsilwzqw_MSPR-EPSI2021",
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PWD,
+    database: process.env.MYSQL_DB,
 });
 
 db.connect(function(error) {
@@ -21,36 +22,46 @@ db.connect(function(error) {
 /**
  * @swagger
  * components:
+ *   securitySchemes:
+ *    oAuthPassword:
+ *     type: oauth2
+ *     description: Cette API utilise l'authentification OAuth 2.0
+ *     flows:
+ *       password:
+ *         tokenUrl: http://localhost:443/api-docs/oauth2/token
+ *         scopes:
+ *           admin: créer, modifier ou supprimer un code promo
  *   schemas:
  *     Promo:
  *       type: object
  *       required:
- *         - id
- *         - data
+ *         - ID
+ *         - DATA
  *       properties:
- *         id:
+ *         ID:
  *           type: integer
- *           description: Identifiant généré automatiquement
- *         data:
+ *           description: L'identifiant automatiquement généré par la base de données
+ *         DATA:
  *           type: string
  *           description: Le code promotionnel
- *         libelle:
+ *         LIBELLE:
  *           type: string
- *           description: La description du code promotionnel
- * 		   montant:
- * 			 type: integer
- * 			 description: Le montant de la réduction du code promotionnel
+ *           description: Le contenue que contient le code promotionnel
+ *         MONTANT:
+ *           type: string
+ *           description: Le montant de la promotion
  *       example:
- *         id:1
- *         data:codepromo1
- *         libelle:Marque ou description du code promotionnel
+ *         ID: 5
+ *         DATA: CodePromo1
+ *         LIBELLE: Mon Code Promo
+ *         MONTANT: 10
  */
 
 /**
  * @swagger
  * tags:
  *   name: Promos
- *   description: Api des codes promotionnels
+ *   description: API de gestion des codes promotionnels
  */
 
 /**
@@ -61,7 +72,7 @@ db.connect(function(error) {
  *     tags: [Promos]
  *     responses:
  *       200:
- *         description: The list of the promos
+ *         description: Succès, Liste des codes promotionnels
  *         content:
  *           application/json:
  *             schema:
@@ -71,7 +82,7 @@ db.connect(function(error) {
  */
 
 router.get("/", (req, res) => {
-    db.query(`select * from QR_CODE`, function(error, rows, fields) {
+    db.query(`select * from ${table}`, function(error, rows, fields) {
         if (error) throw error;
         res.send(rows);
     });
@@ -79,31 +90,30 @@ router.get("/", (req, res) => {
 
 /**
  * @swagger
- * /promos/{id}:
+ * /promos/{DATA}:
  *   get:
- *     summary: Get the promo by id
+ *     summary: Retourne un code promotionnel à l'aide de son code data
  *     tags: [Promos]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: DATA
  *         schema:
  *           type: string
  *         required: true
- *         description: The promo id
+ *         description: Donnée du code promo
  *     responses:
  *       200:
- *         description: The promo description by id
+ *         description: La description du code promotionnel par DATA
  *         contens:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Promo'
  *       404:
- *         description: The promo was not found
+ *         description: Erreur, le code promo n'a pas été trouvé
  */
 
-router.get("/:id", (req, res) => {
-    //const promo = req.app.db.get("promos").find({ id: req.params.id }).value();
-    db.query(`select * from QR_CODE WHERE ID = ${ req.params.id}`, function(error, rows, fields) {
+router.get("/:data", (req, res) => {
+    db.query(`select * from ${table} WHERE DATA = '${ req.params.data}'`, function(error, rows, fields) {
         if (error) throw error;
         if (error || Object.keys(rows).length === 0) {
             res.status(404).send({ error: "Error" });
@@ -111,19 +121,15 @@ router.get("/:id", (req, res) => {
         }
         res.send(rows);
     });
-
-    // if(!promo){
-    // 	res.sendStatus(404)
-    // }
-
-    // res.send(promo);
 });
 
 /**
  * @swagger
  * /promos:
  *   post:
- *     summary: Create a new promo
+ *     summary: Création d'un code promotionnel
+ *     security:
+ *       oAuthSample: [admin]
  *     tags: [Promos]
  *     requestBody:
  *       required: true
@@ -133,13 +139,13 @@ router.get("/:id", (req, res) => {
  *             $ref: '#/components/schemas/Promo'
  *     responses:
  *       200:
- *         description: The promo was successfully created
+ *         description: Le code promotionnel a été enregistré avec succès
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Promo'
  *       500:
- *         description: Some server error
+ *         description: Erreur, Le serveur a rencontré un problème
  */
 
 router.post("/", (req, res) => {
@@ -159,17 +165,19 @@ router.post("/", (req, res) => {
 
 /**
  * @swagger
- * /promos/{id}:
+ * /promos/{DATA}:
  *  put:
- *    summary: Update the promo by the id
+ *    summary: Mise à jour du code promotionnel
+ *    security:
+ *       oAuthSample: [admin]
  *    tags: [Promos]
  *    parameters:
  *      - in: path
- *        name: id
+ *        name: DATA
  *        schema:
  *          type: string
  *        required: true
- *        description: The promo id
+ *        description: DATA du code promo
  *    requestBody:
  *      required: true
  *      content:
@@ -178,26 +186,26 @@ router.post("/", (req, res) => {
  *            $ref: '#/components/schemas/Promo'
  *    responses:
  *      200:
- *        description: The promo was updated
+ *        description: Succès, le code promotionnel a bien été mis à jour
  *        content:
  *          application/json:
  *            schema:
  *              $ref: '#/components/schemas/Promo'
  *      404:
- *        description: The promo was not found
+ *        description: Erreur, le code promotionnel est introuvable
  *      500:
- *        description: Some error happened
+ *        description: Erreur, Le serveur a rencontré un problème
  */
 
-router.put("/:id", (req, res) => {
+router.put("/:DATA", (req, res) => {
     try {
         req.app.db
             .get("promos")
-            .find({ id: req.params.id })
+            .find({ DATA: req.params.DATA })
             .assign(req.body)
             .write();
 
-        res.send(req.app.db.get("promos").find({ id: req.params.id }));
+        res.send(req.app.db.get("promos").find({ DATA: req.params.DATA }));
     } catch (error) {
         return res.status(500).send(error);
     }
@@ -205,29 +213,35 @@ router.put("/:id", (req, res) => {
 
 /**
  * @swagger
- * /promos/{id}:
+ * /promos/{DATA}:
  *   delete:
- *     summary: Remove the promo by id
+ *     summary: Suppression d'un code promotionnel avec son code DATA
+ *     security:
+ *       oAuthSample: [admin]
  *     tags: [Promos]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: DATA
  *         schema:
  *           type: string
  *         required: true
- *         description: The promo id
+ *         description: DATA du code promotionnel
  * 
  *     responses:
  *       200:
- *         description: The promo was deleted
+ *         description: Succès, Le code promo a bien été supprimé
  *       404:
- *         description: The promo was not found
+ *         description: Erreur, Le code promo est introuvable dans la base de données
  */
 
-router.delete("/:id", (req, res) => {
-    req.app.db.get("promos").remove({ id: req.params.id }).write();
-
-    res.sendStatus(200);
+router.delete("/:DATA", (req, res) => {
+    db.query(`DELETE * from ${table} WHERE DATA = '${ req.params.DATA}'`, function(error, rows, fields) {
+        if (error) {
+            throw error;
+        } else {
+            res.sendStatus(200);
+        }
+    });
 });
 
 module.exports = router;
